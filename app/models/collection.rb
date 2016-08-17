@@ -44,7 +44,7 @@ class Collection < ApplicationRecord
 				insta_id: new_post[:insta_id])
 			CollectionPost.where(collection_id: id, post_id: created_post.id).first.update(tag_time: new_post[:tag_time])
 		else
-			if existing.first.collections.where(id: id.to_i).empty?
+			if CollectionPost.where(collection_id: id, post_id: existing.first.id).empty?
 				CollectionPost.create(collection_id: id.to_i, post_id: existing.first.id, tag_time: new_post[:tag_time])
 			end
 		end
