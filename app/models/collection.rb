@@ -9,9 +9,7 @@ class Collection < ApplicationRecord
 
 	def get_data
 		results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
-		puts results["data"]
 		while !(results["pagination"]["next_url"].nil?) && ((results["data"].sort_by { |hash| hash['created_time'].to_i }.first["created_time"].to_i > end_time) || (results["data"].sort_by { |hash| hash['created_time'].to_i }.first["created_time"].to_i < start_time)) do
-			puts "test"
 			results = JSON.parse(Net::HTTP.get(URI.parse(results["pagination"]["next_url"])))
 		end
 		results["data"].each do |post_obj|
@@ -57,7 +55,6 @@ class Collection < ApplicationRecord
 	end
 
 	def get_tag_time(post)
-		puts post["created_time"]
 		if post["created_time"].to_i >= start_time && post["created_time"].to_i <= end_time
 			if post["caption"]["text"].include? ('#' + tag)
 				return post["caption"]["created_time"]
@@ -67,7 +64,6 @@ class Collection < ApplicationRecord
 				comment_url = "https://api.instagram.com/v1/media/#{post_id}/comments?access_token=#{access_token}"
 				comments = JSON.parse(Net::HTTP.get(URI.parse(comment_url)))
 				comments["data"].each do |comment|
-					puts "comment call"
 					next unless comment["text"].include? ('#' + tag)
 					return comment["created_time"]
 				end
