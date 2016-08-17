@@ -11,11 +11,10 @@ class Collection < ApplicationRecord
 		results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
 		while !(results["pagination"]["next_url"].nil?) && !(results["data"].last["created_time"].to_i < end_time) do
 			results = JSON.parse(Net::HTTP.get(URI.parse(results["pagination"]["next_url"])))
-			puts "call"
 		end
 		results["data"].each do |post_obj|
 			tag_time = get_tag_time(post_obj)
-			next unless !(tag_time == -1)
+			next unless tag_time != -1
 			new_post = Hash.new
 			new_post = {
 				media_type: post_obj["type"],
