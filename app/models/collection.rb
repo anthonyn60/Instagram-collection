@@ -9,7 +9,7 @@ class Collection < ApplicationRecord
 
 	def get_data
 		results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
-		while !(results["pagination"]["next_url"].nil?) && results["data"].last["created_time"].to_i > end_time do
+		while !(results["pagination"]["next_url"].nil?) && results["data"].sort_by { |hash| hash['created_time'].to_i }.last["created_time"].to_i > end_time do
 			results = JSON.parse(Net::HTTP.get(URI.parse(results["pagination"]["next_url"])))
 		end
 		results["data"].each do |post_obj|
@@ -79,7 +79,7 @@ class Collection < ApplicationRecord
 	end
 
 	def more_data?(results)
-		return results["pagination"]["next_url"].nil? || (results["data"].last["created_time"].to_i < start_time)
+		return results["pagination"]["next_url"].nil? || (results["data"].sort_by { |hash| hash['created_time'].to_i }.last["created_time"].to_i < start_time)
 	end
 
 	def get_media(post_obj)
