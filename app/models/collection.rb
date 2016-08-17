@@ -63,7 +63,7 @@ class Collection < ApplicationRecord
 				return post["caption"]["created_time"]
 			else
 				post_id = post["id"]
-				access_token = ENV[:ACCESS_TOKEN]
+				access_token = ENV['ACCESS_TOKEN']
 				comment_url = "https://api.instagram.com/v1/media/#{post_id}/comments?access_token=#{access_token}"
 				comments = JSON.parse(Net::HTTP.get(URI.parse(comment_url)))
 				comments["data"].each do |comment|
@@ -104,7 +104,7 @@ class Collection < ApplicationRecord
 	end
 
 	def create_url
-		access_token = ENV[:ACCESS_TOKEN]
+		access_token = ENV['ACCESS_TOKEN']
 		return next_url.nil? ? "https://api.instagram.com/v1/tags/#{tag}/media/recent?access_token=#{access_token}" : next_url
 	end
 end

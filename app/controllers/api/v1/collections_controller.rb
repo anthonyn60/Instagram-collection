@@ -8,7 +8,8 @@ module Api::V1
 					start_time: @collection.start_time,
 					end_time: @collection.end_time,
 					posts: @collection.posts.select('posts.*, collection_posts.tag_time').paginate(:page => params[:page], :per_page => 10),
-					name: @collection.name
+					name: @collection.name,
+					tag: @collection.tag
 				}
 			else
 				@collection = Collection.new(collection_params)
@@ -18,7 +19,8 @@ module Api::V1
 						start_time: @collection.start_time,
 						end_time: @collection.end_time,
 						posts: @collection.posts.select('posts.*, collection_posts.tag_time'),
-						name: @collection.name }
+						name: @collection.name,
+						tag: @collection.tag }
 				else
 					render json: {
 						message: "The collection was not successfully created.",
@@ -45,7 +47,8 @@ module Api::V1
 					posts: @posts,
 					start_time: @collection.first.start_time,
 					end_time: @collection.first.end_time,
-					name: @collection.first.name }
+					name: @collection.first.name,
+					tag: @collection.first.tag }
 				end
 			end
 		end
