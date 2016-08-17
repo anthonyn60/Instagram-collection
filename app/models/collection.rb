@@ -9,12 +9,13 @@ class Collection < ApplicationRecord
 
 	def get_data
 		results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
-		while !(results["pagination"]["next_url"].nil?) && !(results["data"].last["created_time"].to_i < end_time) do
+		while !(results["pagination"]["next_url"].nil?) && results["data"].last["created_time"].to_i > end_time do
 			results = JSON.parse(Net::HTTP.get(URI.parse(results["pagination"]["next_url"])))
 		end
 		results["data"].each do |post_obj|
 			tag_time = get_tag_time(post_obj)
 			next unless tag_time != -1
+			puts "added"
 			new_post = Hash.new
 			new_post = {
 				media_type: post_obj["type"],
@@ -57,6 +58,7 @@ class Collection < ApplicationRecord
 	end
 
 	def get_tag_time(post)
+		puts post["created_time"]
 		if post["created_time"].to_i >= start_time && post["created_time"].to_i <= end_time
 			if post["caption"]["text"].include? ('#' + tag)
 				return post["caption"]["created_time"]
