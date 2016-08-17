@@ -62,7 +62,7 @@ module Api::V1
 		end
 
 		def collection_params
-			params.permit(:name, :start_time, :end_time, :tag)
+			params.require(:collection).permit(:name, :start_time, :end_time, :tag)
 		end
 	end
 end
