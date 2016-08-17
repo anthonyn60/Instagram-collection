@@ -9,13 +9,12 @@ class Collection < ApplicationRecord
 
 	def get_data
 		results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
-		while !(results["pagination"]["next_url"].nil?) && results["data"].sort_by { |hash| hash['created_time'].to_i }.last["created_time"].to_i > end_time do
+		while !(results["pagination"]["next_url"].nil?) && results["data"].sort_by { |hash| hash['created_time'].to_i }.first["created_time"].to_i > end_time do
 			results = JSON.parse(Net::HTTP.get(URI.parse(results["pagination"]["next_url"])))
 		end
 		results["data"].each do |post_obj|
 			tag_time = get_tag_time(post_obj)
 			next unless tag_time != -1
-			puts "added"
 			new_post = Hash.new
 			new_post = {
 				media_type: post_obj["type"],
@@ -28,12 +27,11 @@ class Collection < ApplicationRecord
 			}
 			add_post(new_post)
 		end
-		self.next_url = more_data?(results) ? "No more" : results["pagination"]["next_url"]
+		self.next_url = no_more_data?(results) ? "No more" : results["pagination"]["next_url"]
 		self.save
 	end
 
 	def add_post(new_post)
-		puts "new post"
 		existing = Post.where(insta_id: new_post[:insta_id])
 		if existing.empty?
 			created_post = self.posts.create!(media_type: new_post[:media_type],
@@ -42,7 +40,6 @@ class Collection < ApplicationRecord
 				username: new_post[:username],
 				caption: new_post[:caption],
 				insta_id: new_post[:insta_id])
-			puts "created!"
 			CollectionPost.where(collection_id: self.id, post_id: created_post.id).first.update(tag_time: new_post[:tag_time])
 		else
 			unless existing.first.collections.where(id: self.id)
@@ -78,7 +75,7 @@ class Collection < ApplicationRecord
 		end
 	end
 
-	def more_data?(results)
+	def no_more_data?(results)
 		return results["pagination"]["next_url"].nil? || (results["data"].sort_by { |hash| hash['created_time'].to_i }.last["created_time"].to_i < start_time)
 	end
 
