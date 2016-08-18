@@ -8,26 +8,33 @@ class Collection < ApplicationRecord
 	validate :valid_tag, :valid_times
 
 	def get_data
-		results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
-		while !(results["pagination"]["next_url"].nil?) && ((results["data"].sort_by { |hash| hash['created_time'].to_i }.first["created_time"].to_i > end_time) || (results["data"].sort_by { |hash| hash['created_time'].to_i }.first["created_time"].to_i < start_time)) do
-			results = JSON.parse(Net::HTTP.get(URI.parse(results["pagination"]["next_url"])))
+		numposts = self.posts.count % 10
+		loop do
+			results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
+			loop do
+				break if results["data"].sort{ |a,b| a["created_time"] <=> b["created_time"]}.first["created_time"].to_i < end_time
+				break if results["pagination"]["next_url"].nil?
+				results = JSON.parse(Net::HTTP.get(URI.parse(results["pagination"]["next_url"])))
+			end
+			results["data"].each do |post_obj|
+				tag_time = get_tag_time(post_obj)
+				next unless tag_time != -1
+				new_post = Hash.new
+				new_post = {
+					media_type: post_obj["type"],
+					insta_link: post_obj["link"],
+					media: get_media(post_obj),
+					username: post_obj["user"]["username"],
+					caption: post_obj["caption"]["text"],
+					tag_time: tag_time,
+					insta_id: post_obj["id"]
+				}
+				add_post(new_post)
+				numposts = numposts + 1
+			end
+			self.next_url = no_more_data?(results) ? "No more" : results["pagination"]["next_url"]
+			break if self.next_url == "No more" || numposts >= 10
 		end
-		results["data"].each do |post_obj|
-			tag_time = get_tag_time(post_obj)
-			next unless tag_time != -1
-			new_post = Hash.new
-			new_post = {
-				media_type: post_obj["type"],
-				insta_link: post_obj["link"],
-				media: get_media(post_obj),
-				username: post_obj["user"]["username"],
-				caption: post_obj["caption"]["text"],
-				tag_time: tag_time,
-				insta_id: post_obj["id"]
-			}
-			add_post(new_post)
-		end
-		self.next_url = no_more_data?(results) ? "No more" : results["pagination"]["next_url"]
 		self.save
 	end
 
@@ -74,7 +81,7 @@ class Collection < ApplicationRecord
 	end
 
 	def no_more_data?(results)
-		return results["pagination"]["next_url"].nil? || (results["data"].sort_by { |hash| hash['created_time'].to_i }.last["created_time"].to_i < start_time)
+		return results["pagination"]["next_url"].nil? || (results["data"].sort{ |a,b| a["created_time"] <=> b["created_time"]}.last["created_time"].to_i < start_time)
 	end
 
 	def get_media(post_obj)
