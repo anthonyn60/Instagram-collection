@@ -7,6 +7,7 @@ Rails.application.routes.draw do
 			namespace 'v1' do
 				post '/collections' => 'collections#create'
   				get '/collections' => 'collections#read' 
+  				get '/collections/all' => 'collections#get_all_collections'
 			end
 		end
 	end	

@@ -14,7 +14,8 @@ module Api::V1
 						end_time: collection.end_time,
 						posts: collection.posts.select('posts.*, collection_posts.tag_time').as_json(except: [:created_at, :updated_at]),
 						name: collection.name,
-						tag: collection.tag }
+						tag: collection.tag,
+						current_count: posts.count }
 				else
 					render json: {
 						message: "The collection was not successfully created.",
@@ -45,9 +46,15 @@ module Api::V1
 					start_time: collection.first.start_time,
 					end_time: collection.first.end_time,
 					name: collection.first.name,
-					tag: collection.first.tag }
+					tag: collection.first.tag,
+					current_count: posts.count }
 				end
 			end
+		end
+
+		def get_all_collections
+			collections = Collection.all.order(created_at: :desc)
+			render json: collections, except: [:updated_at]
 		end
 
 		def get_more_posts
