@@ -8,7 +8,7 @@ class Collection < ApplicationRecord
 	validate :valid_tag, :valid_times
 
 	def get_data
-		numposts = self.posts.count % 10
+		numposts = self.posts.count % 9
 		loop do
 			results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
 			loop do
@@ -20,12 +20,13 @@ class Collection < ApplicationRecord
 				tag_time = get_tag_time(post_obj)
 				next unless tag_time != -1
 				new_post = Hash.new
+				caption = post_obj["caption"].nil? ? nil : post_obj["caption"]["text"]
 				new_post = {
 					media_type: post_obj["type"],
 					insta_link: post_obj["link"],
 					media: get_media(post_obj),
 					username: post_obj["user"]["username"],
-					caption: post_obj["caption"]["text"],
+					caption: caption,
 					tag_time: tag_time,
 					insta_id: post_obj["id"]
 				}
@@ -63,7 +64,7 @@ class Collection < ApplicationRecord
 
 	def get_tag_time(post)
 		if post["created_time"].to_i >= start_time && post["created_time"].to_i <= end_time
-			if post["caption"]["text"].include? ('#' + tag)
+			if !post["caption"].nil? && post["caption"]["text"].downcase.include?('#' + tag.downcase)
 				return post["caption"]["created_time"]
 			else
 				post_id = post["id"]
@@ -71,7 +72,7 @@ class Collection < ApplicationRecord
 				comment_url = "https://api.instagram.com/v1/media/#{post_id}/comments?access_token=#{access_token}"
 				comments = JSON.parse(Net::HTTP.get(URI.parse(comment_url)))
 				comments["data"].each do |comment|
-					next unless comment["text"].include? ('#' + tag)
+					next unless comment["text"].downcase.include? ('#' + tag.downcase)
 					return comment["created_time"]
 				end
 			end
@@ -90,6 +91,14 @@ class Collection < ApplicationRecord
 		else
 			return post_obj["images"]["standard_resolution"]["url"]
 		end
+	end
+
+	def media_link
+		return self.posts.where(media_type: 'image').empty? ? nil : self.posts.where(media_type: 'image').first.media
+	end
+
+	def is_more
+		return self.next_url != "No more"
 	end
 
 	def valid_tag

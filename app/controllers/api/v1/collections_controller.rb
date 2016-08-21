@@ -12,10 +12,10 @@ module Api::V1
 					render json: { id: collection.id,
 						start_time: collection.start_time,
 						end_time: collection.end_time,
-						posts: collection.posts.select('posts.*, collection_posts.tag_time').as_json(except: [:created_at, :updated_at]),
+						posts: collection.posts.select('posts.*, collection_posts.tag_time').order(:id).as_json(except: [:created_at, :updated_at]),
 						name: collection.name,
 						tag: collection.tag,
-						current_count: posts.count }
+						current_count: collection.posts.count}
 				else
 					render json: {
 						message: "The collection was not successfully created.",
@@ -31,12 +31,11 @@ module Api::V1
 			if collection.empty?
 				render json: {message: 'No posts found for this collection ID.', code: '404'}, status: :not_found
 			else
-				ten_at_page = (params[:page].to_i + 1) * 10
-				#ten_at_page = (ten_at_page + 1) * 10
-				posts = collection.first.posts.select('posts.*, collection_posts.tag_time').paginate(:page => params[:page], :per_page => 10)
-				while (posts.empty? || (posts.count < ten_at_page)) && collection.first.next_url != "No more"
+				nine_at_page = (params[:page].to_i + 1) * 9
+				posts = collection.first.posts.select('posts.*, collection_posts.tag_time').order(:id).paginate(:page => params[:page], :per_page => 9)
+				while (posts.empty? || (posts.count < nine_at_page)) && collection.first.next_url != "No more"
 					get_more_posts
-					posts = collection.first.posts.select('posts.*, collection_posts.tag_time').paginate(:page => params[:page], :per_page => 10)
+					posts = collection.first.posts.select('posts.*, collection_posts.tag_time').order(:id).paginate(:page => params[:page], :per_page => 9)
 				end
 				if posts.empty? 
 					render json: {message: 'There are no remaining posts for this collection.', code: '404'}, status: :not_found
@@ -47,14 +46,14 @@ module Api::V1
 					end_time: collection.first.end_time,
 					name: collection.first.name,
 					tag: collection.first.tag,
-					current_count: posts.count }
+					current_count: posts.count}
 				end
 			end
 		end
 
 		def get_all_collections
 			collections = Collection.all.order(created_at: :desc)
-			render json: collections, except: [:updated_at]
+			render json: collections, :callback => params[:callback], except: [:updated_at], methods: :media_link
 		end
 
 		def get_more_posts
