@@ -8,14 +8,16 @@ module Api::V1
 			else
 				collection = Collection.new(collection_params)
 				if collection.save
-					collection.get_data
 					render json: { id: collection.id,
 						start_time: collection.start_time,
 						end_time: collection.end_time,
 						posts: collection.posts.select('posts.*, collection_posts.tag_time').order(:id).as_json(except: [:created_at, :updated_at]),
 						name: collection.name,
 						tag: collection.tag,
-						current_count: collection.posts.count}
+						current_count: collection.posts.count}, method: :get_next_url
+					Thread.new do
+						collection.get_data
+					end
 				else
 					render json: {
 						message: "The collection was not successfully created.",
@@ -46,14 +48,14 @@ module Api::V1
 					end_time: collection.first.end_time,
 					name: collection.first.name,
 					tag: collection.first.tag,
-					current_count: posts.count}
+					current_count: posts.count }, method: :get_next_url
 				end
 			end
 		end
 
 		def get_all_collections
-			collections = Collection.all.order(created_at: :desc)
-			render json: collections, :callback => params[:callback], except: [:updated_at], methods: :media_link
+			collections = Collection.all.order(created_at: :desc).paginate(:page => params[:page], :per_page => 9)
+			render json: collections, except: [:updated_at, :next_url], methods: :media_link
 		end
 
 		def get_more_posts
