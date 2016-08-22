@@ -16,7 +16,7 @@
     "paths": {
         "/collections": {
             "get": {
-                "summary": "Get the collection and posts created for that collection id.",
+                "summary": "Get a list of all saved collections (without posts).",
                 "description": "Used to retrieve all existing collections.\n",
                 "tags": [
                     "Collections"
