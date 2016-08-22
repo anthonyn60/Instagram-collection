@@ -60,7 +60,7 @@ class Collection < ApplicationRecord
 	end
 
 	def get_more_data
-		unless self.next_url == "No more"
+		unless self.next_url == "No more" || self.locked
 			get_data
 		end
 	end
