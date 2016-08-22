@@ -8,6 +8,8 @@ class Collection < ApplicationRecord
 	validate :valid_tag, :valid_times
 
 	def get_data
+		self.locked = true
+		self.save
 		numposts = self.posts.count % 9
 		loop do
 			results = JSON.parse(Net::HTTP.get(URI.parse(create_url)))
@@ -36,6 +38,7 @@ class Collection < ApplicationRecord
 			self.next_url = no_more_data?(results) ? "No more" : results["pagination"]["next_url"]
 			break if self.next_url == "No more" || numposts >= 10
 		end
+		self.locked = false
 		self.save
 	end
 

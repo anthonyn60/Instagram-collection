@@ -55,7 +55,7 @@ module Api::V1
 
 		def get_all_collections
 			collections = Collection.all.order(created_at: :desc).paginate(:page => params[:page], :per_page => 9)
-			render json: collections, except: [:updated_at, :next_url], methods: :media_link
+			render json: collections, except: [:updated_at, :next_url, :locked], methods: :media_link
 		end
 
 		def get_more_posts
