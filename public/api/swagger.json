@@ -17,33 +17,18 @@
         "/collections": {
             "get": {
                 "summary": "Get the collection and posts created for that collection id.",
-                "description": "Used to retrieve an existing collection's posts, paginated (max per page is 10). If the page requested is outside the number of pages, the application will populate the database with additional posts until either the requested page is filled, or there aren't enough posts to reach this page (where it'll give an error).\n",
+                "description": "Used to retrieve all existing collections.\n",
                 "tags": [
                     "Collections"
                 ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "query",
-                        "description": "Collection ID",
-                        "required": true,
-                        "type": "number",
-                        "format": "integer"
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Page number",
-                        "required": false,
-                        "type": "number",
-                        "format": "integer"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "A collection object which contains posts.",
+                        "description": "A list of collections including the first picture.",
                         "schema": {
-                            "$ref": "#/definitions/Collections"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Collections"
+                            }
                         }
                     },
                     "404": {
@@ -75,7 +60,48 @@
                     "200": {
                         "description": "A collection object which contains posts.",
                         "schema": {
-                            "$ref": "#/definitions/Collections"
+                            "$ref": "#/definitions/Collection_Obj"
+                        }
+                    },
+                    "404": {
+                        "description": "No posts were found for that collection or page.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{id}": {
+            "get": {
+                "summary": "Get the collection and posts created for that collection id.",
+                "description": "Used to retrieve an existing collection's posts, paginated (max per page is 9). If the page requested is outside the number of pages, the application will populate the database with additional posts until either the requested page is filled, or there aren't enough posts to reach this page (where it'll give an error).\n",
+                "tags": [
+                    "Collections"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Collection ID",
+                        "required": true,
+                        "type": "number",
+                        "format": "integer"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "type": "number",
+                        "format": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A collection object which contains posts.",
+                        "schema": {
+                            "$ref": "#/definitions/Collection_Obj"
                         }
                     },
                     "404": {
@@ -123,7 +149,7 @@
                 }
             }
         },
-        "Collections": {
+        "Collection_Obj": {
             "type": "object",
             "properties": {
                 "id": {
@@ -147,12 +173,61 @@
                 "tag": {
                     "description": "Hashtag"
                 },
+                "current_count": {
+                    "description": "Number of posts currently in the database",
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "get_next_url": {
+                    "description": "Next URL for Instagram post loading.",
+                    "type": "string",
+                    "format": "string"
+                },
                 "posts": {
                     "description": "Posts within the collection.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/Posts"
                     }
+                }
+            }
+        },
+        "Collections": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "start_time": {
+                    "description": "Start time, epoch.",
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "end_time": {
+                    "description": "Start time, epoch.",
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "name": {
+                    "description": "Name of collection.",
+                    "type": "string"
+                },
+                "tag": {
+                    "description": "Hashtag",
+                    "type": "string"
+                },
+                "next_url": {
+                    "description": "URL for next images to check",
+                    "type": "string"
+                },
+                "media_link": {
+                    "description": "Link for first image",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "Time collection was created",
+                    "type": "string"
                 }
             }
         },
