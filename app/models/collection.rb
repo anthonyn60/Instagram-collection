@@ -65,12 +65,6 @@ class Collection < ApplicationRecord
 		end
 	end
 
-	def get_next_url
-		if self.next_url
-			self.next_url
-		end
-	end
-
 	def get_tag_time(post)
 		if post["created_time"].to_i >= start_time && post["created_time"].to_i <= end_time
 			if !post["caption"].nil? && post["caption"]["text"].downcase.include?('#' + tag.downcase)

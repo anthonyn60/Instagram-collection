@@ -178,7 +178,7 @@
                     "type": "integer",
                     "format": "int32"
                 },
-                "get_next_url": {
+                "next_url": {
                     "description": "Next URL for Instagram post loading.",
                     "type": "string",
                     "format": "string"

@@ -14,7 +14,8 @@ module Api::V1
 						posts: collection.posts.select('posts.*, collection_posts.tag_time').order(:id).as_json(except: [:created_at, :updated_at]),
 						name: collection.name,
 						tag: collection.tag,
-						current_count: collection.posts.count}, method: :get_next_url
+						current_count: collection.posts.count,
+						next_url: collection.next_url}
 					Thread.new do
 						collection.get_data
 					end
@@ -48,7 +49,8 @@ module Api::V1
 					end_time: collection.first.end_time,
 					name: collection.first.name,
 					tag: collection.first.tag,
-					current_count: posts.count }, method: :get_next_url
+					next_url: collection.first.next_url,
+					current_count: posts.count }
 				end
 			end
 		end
