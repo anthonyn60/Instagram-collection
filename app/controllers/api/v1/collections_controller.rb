@@ -39,6 +39,9 @@ module Api::V1
 				while (posts.empty? || (posts.count < nine_at_page)) && collection.first.next_url != "No more"
 					get_more_posts
 					posts = collection.first.posts.select('posts.*, collection_posts.tag_time').order(:id).paginate(:page => params[:page], :per_page => 9)
+					if posts.count < 9 #stop neverending polling on lock
+						break
+					end
 				end
 				if posts.empty? 
 					render json: {message: 'There are no remaining posts for this collection.', code: '404'}, status: :not_found
